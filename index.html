@@ -1,13 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Green Earth</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --green: #15803D;
+            --yellow: #FACC15;
+            --banner-bg: #CFF0DC;
+            --dark-text: #1F2937;
+            --form-section-bg: #166534;
+            --footer-bg: #14532D;
+        }
+
+    </style>
 
 </head>
-<body>
-    
+
+<body  class="bg-slate-50 text-slate-800">
+     <header class="sticky top-0 z-40 shadow-sm" style="background-color: var(--green);">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap">
+            <div class="flex items-center gap-3 flex-none">
+                <div class="text-white text-xl font-extrabold">🌱 Green Earth</div>
+            </div>
+
+            <nav class="hidden md:flex gap-8 items-center justify-center w-2/4">
+                <a href="#about" class="text-white font-medium">About</a>
+                <a href="#shop" class="text-white font-medium">Gallery</a>
+                <a href="#impact" class="text-white font-medium">Our Impact</a>
+            </nav>
+
+            <div class="flex items-center justify-end w-1/4">
+                <button onclick="document.getElementById('form-section').scrollIntoView({ behavior: 'smooth' })"
+                    class="bg-[var(--yellow)] text-[var(--green)] font-bold px-4 py-2 rounded-full shadow hidden md:inline-flex">
+                    Plant a Tree
+                </button>
+
+                </button>
+                <div class="md:hidden ml-4">
+                    <button id="mobileMenuBtn" class="text-white font-semibold">Menu</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="mobileMenu" class="hidden md:hidden border-t" style="background-color: var(--green);">
+            <div class="px-4 py-3 flex flex-col gap-2">
+                <a href="#about" class="text-white font-semibold">About</a>
+                <a href="#shop" class="text-white font-semibold">Gallery</a>
+                <a href="#impact" class="text-white font-semibold">Our Impact</a>
+                <button onclick="document.getElementById('form-section').scrollIntoView({ behavior: 'smooth' })"
+                    class="mt-2 bg-[var(--yellow)] text-[var(--green)] font-bold px-3 py-2 rounded-full">Plant a
+                    Tree</button>
+            </div>
+        </div>
+    </header>
+
+
 </body>
+
 </html>
