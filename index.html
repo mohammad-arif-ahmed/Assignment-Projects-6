@@ -361,7 +361,6 @@
         </div>
     </footer>
     <script>
-        
         const API_BASE = 'https://openapi.programming-hero.com/api';
         const ENDPOINTS = {
             categories: API_BASE + '/categories',
@@ -387,10 +386,290 @@
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const mobileMenu = document.getElementById('mobileMenu');
         const closeModalBtn = document.getElementById('closeModalBtn');
+
+        let categories = [];
+        let cart = [];
+        const fmt = n => '৳' + Number(n).toFixed(2);
+        const showSpinner = show => spinnerEl.classList.toggle('hidden', !show);
+        const safeGate = (obj, ...keys) => {
+            for (const k of keys)
+                if (obj && Object.prototype.hasOwnProperty.call(obj, k)) return obj[k];
+            return undefined;
+        };
+         function truncate(str, n) {
+            return str && str.length > n ? str.slice(0, n) + '...' : (str || '');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
+        }
+
+
+        async function loadCategories() {
+            showSpinner(true);
+            try {
+                const res = await fetch(ENDPOINTS.categories);
+                const json = await res.json();
+                categories = safeGet(json, 'data')?.data || safeGet(json, 'data') || safeGet(json, 'categories') || [];
+                renderCategories(categories);
+                if (categories.length) {
+                    const firstId = categories[0].id || categories[0].category_id;
+                    loadCategoryProducts(firstId);
+                } else {
+                    loadPlants();
+                }
+            } catch (e) {
+                console.error(e);
+                categoryListEl.innerHTML = `<div class="text-red-600">Failed to load categories</div>`;
+            } finally {
+                showSpinner(false);
+            }
+        }
+
+        function renderCategories(list) {
+            categoryListEl.innerHTML = '';
+            const btnAll = createCategoryButton('All Plants', () => {
+                setActiveCategoryButton(null);
+                loadPlants();
+            });
+            categoryListEl.appendChild(btnAll);
+            list.forEach(cat => {
+                const label = cat.name || cat.category_name || cat.title || 'Category';
+                const id = cat.id || cat.category_id;
+                const btn = createCategoryButton(label, () => {
+                    setActiveCategoryButton(btn);
+                    loadCategoryProducts(id);
+                });
+                btn.dataset.id = id ?? '';
+                categoryListEl.appendChild(btn);
+            });
+            const firstBtn = categoryListEl.querySelector('button');
+            if (firstBtn) setActiveCategoryButton(firstBtn);
+        }
+
+        function createCategoryButton(label, onClick) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'category-button text-left px-3 py-2 rounded-md bg-slate-50 font-medium';
+            btn.textContent = label;
+            btn.addEventListener('click', onClick);
+            return btn;
+        }
+
+        function setActiveCategoryButton(btn) {
+            categoryListEl.querySelectorAll('button').forEach(b => {
+                b.classList.remove('bg-[var(--green)]', 'text-white');
+                b.classList.add('bg-slate-50', 'text-[var(--dark-text)]');
+            });
+            if (btn) {
+                btn.classList.remove('bg-slate-50', 'text-[var(--dark-text)]');
+                btn.classList.add('bg-[var(--green)]', 'text-white');
+            } else {
+                const first = categoryListEl.querySelector('button');
+                if (first) {
+                    first.classList.remove('bg-slate-50', 'text-[var(--dark-text)]');
+                    first.classList.add('bg-[var(--green)]', 'text-white');
+                }
+            }
+        }
+
+    
+        async function loadPlants() {
+            showSpinner(true);
+            productsEl.innerHTML = '';
+            try {
+                const res = await fetch(ENDPOINTS.plants);
+                const json = await res.json();
+                const list = safeGet(json, 'data')?.data || safeGet(json, 'data') || safeGet(json, 'plants') || [];
+                renderProducts(list);
+            } catch (e) {
+                console.error(e);
+                productsEl.innerHTML = `<div class="text-red-600">Failed to load plants</div>`;
+            } finally {
+                showSpinner(false);
+            }
+        }
+
         
-        let categories = [] ;
-        let cart = [] ;
+        async function loadCategoryProducts(id) {
+            if (!id) return loadPlants();
+            showSpinner(true);
+            productsEl.innerHTML = '';
+            try {
+                const res = await fetch(ENDPOINTS.category(id));
+                const json = await res.json();
+                const list = safeGet(json, 'data')?.data || safeGet(json, 'data') || safeGet(json, 'plants') || [];
+                renderProducts(list);
+            } catch (e) {
+                console.error(e);
+                productsEl.innerHTML = `<div class="text-red-600">Failed to load products</div>`;
+            } finally {
+                showSpinner(false);
+            }
+        }
+
         
+        function renderProducts(list) {
+            productsEl.innerHTML = '';
+            if (!list || list.length === 0) {
+                productsEl.innerHTML = `<div class="text-slate-600">No products found</div>`;
+                return;
+            }
+            list.forEach(item => {
+                const id = item.id || item.plant_id || item._id || item.plantId || '';
+                const name = item.name || item.plant_name || item.title || 'Plant';
+                const description = (item.description || item.short_description || item.long_description || '').toString();
+                const img = item.image || item.thumbnail || 'https://via.placeholder.com/800x480?text=No+Image';
+                const category = item.category || item.category_name || 'General';
+                const priceRaw = item.price || item.price_cost || item.cost;
+                const price = priceRaw ? Number(priceRaw) : Number((Math.random() * 20 + 5).toFixed(2));
+
+                const card = document.createElement('article');
+                card.className = 'product-card p-4 flex flex-col h-full';
+
+                card.innerHTML = `
+                    <div class="flex-1">
+                        <img src="${escapeHtml(img)}" alt="${escapeHtml(name)}" class="w-full h-40 object-cover rounded-md">
+                        <h3 class="mt-3 text-base font-semibold text-[var(--dark-text)] cursor-pointer">${escapeHtml(name)}</h3>
+                        <p class="text-xs text-slate-600 mt-1 line-clamp-4">${escapeHtml(truncate(description, 120))}</p>
+                        <div class="meta mt-3 flex items-center justify-between">
+                            <span class="tag inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-green-50 text-[var(--green)]">${escapeHtml(category)}</span>
+                            <span class="price font-bold text-sm">${fmt(price)}</span>
+                        </div>
+                    </div>
+                    <div class="actions mt-4">
+                        <button class="add-to-cart-btn">Add to Cart</button>
+                    </div>
+                `;
+
+                const addBtn = card.querySelector('.add-to-cart-btn');
+                addBtn.addEventListener('click', () => addToCart({ id, name, price, img, description, category }));
+
+                const nameEl = card.querySelector('h3');
+                nameEl.addEventListener('click', () => openDetail(id, item));
+
+                productsEl.appendChild(card);
+            });
+        }
+
+        
+        async function openDetail(id, fallbackItem) {
+            modalEl.classList.remove('hidden');
+            modalEl.classList.add('backdrop-show');
+            modalContentEl.innerHTML = `<div class="text-slate-600">Loading details...</div>`;
+            try {
+                if (id) {
+                    const res = await fetch(ENDPOINTS.plant(id));
+                    const json = await res.json();
+                    const data = safeGet(json, 'data') || safeGet(json, 'data')?.data || fallbackItem || {};
+                    showProductModal(data);
+                } else {
+                    showProductModal(fallbackItem || {});
+                }
+            } catch (e) {
+                console.error(e);
+                showProductModal(fallbackItem || {});
+            }
+        }
+
+        function showProductModal(data) {
+            const name = data.name || data.plant_name || data.title || 'Plant';
+            const img = data.image || data.thumbnail || 'https://via.placeholder.com/800x480?text=No+Image';
+            const description = data.description || data.long_description || data.short_description || 'No description available.';
+            const category = data.category || data.category_name || 'General';
+            const priceRaw = data.price || data.price_cost || data.cost;
+            const price = priceRaw ? Number(priceRaw) : Number((Math.random() * 20 + 5).toFixed(2));
+
+            modalContentEl.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <img src="${escapeHtml(img)}" alt="${escapeHtml(name)}" class="w-full h-56 object-cover rounded-md">
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-[var(--dark-text)]">${escapeHtml(name)}</h3>
+                        <p class="text-sm text-slate-700 mt-3">${escapeHtml(description)}</p>
+                        <div class="mt-4">
+                            <div class="text-sm"><strong>Category:</strong> ${escapeHtml(category)}</div>
+                            <div class="text-lg font-bold mt-2">Price: ${fmt(price)}</div>
+                        </div>
+                        <div class="mt-6 flex gap-3">
+                            <button class="bg-[var(--green)] text-white px-4 py-2 rounded-md">Add to Cart</button>
+                            <button class="bg-slate-100 px-4 py-2 rounded-md text-red-600 font-semibold" id="modalDetailCloseBtn">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            modalContentEl.querySelector('button.bg-[var(--green)]').addEventListener('click', () => {
+                addToCart({ id: data.id || data.plant_id || '', name, price, img, description, category });
+                closeModal();
+            });
+            document.getElementById('modalDetailCloseBtn').addEventListener('click', closeModal);
+        }
+
+        function closeModal() {
+            modalEl.classList.add('hidden');
+            modalEl.classList.remove('backdrop-show');
+            modalContentEl.innerHTML = '';
+        }
+
+    
+        function addToCart(item) {
+            cart.push(item);
+            renderCart();
+        }
+
+        function removeFromCart(idx) {
+            cart.splice(idx, 1);
+            renderCart();
+        }
+
+        function renderCart() {
+            cartListDesktopEl.innerHTML = '';
+            cartListMobileEl.innerHTML = '';
+
+            if (cart.length === 0) {
+                const noItemsText = `<div class="text-slate-500">No items in cart</div>`;
+                cartListDesktopEl.innerHTML = noItemsText;
+                cartListMobileEl.innerHTML = noItemsText;
+            } else {
+                cart.forEach((it, idx) => {
+                    const rowHtml = `<div class="cart-item flex items-center justify-between py-2 border-b last:border-b-0">
+                                     <div class="max-w-[60%] text-sm cursor-pointer" data-item-idx="${idx}">${escapeHtml(it.name)}</div>
+                                     <div class="text-sm font-semibold">${fmt(it.price)} <button class="ml-2 text-red-500" data-idx="${idx}">❌</button></div>
+                                   </div>`;
+                    cartListDesktopEl.innerHTML += rowHtml;
+                    cartListMobileEl.innerHTML += rowHtml;
+                });
+            }
+
+            const attachListeners = (container) => {
+                container.querySelectorAll('button[data-idx]').forEach(btn => {
+                    btn.addEventListener('click', e => removeFromCart(Number(btn.dataset.idx)));
+                });
+                container.querySelectorAll('[data-item-idx]').forEach(itemEl => {
+                    itemEl.addEventListener('click', e => {
+                        const idx = Number(itemEl.dataset.itemIdx);
+                        if (cart[idx]) {
+                            openDetail(cart[idx].id, cart[idx]);
+                        }
+                    });
+                });
+            };
+            attachListeners(cartListDesktopEl);
+            attachListeners(cartListMobileEl);
+
+            const total = cart.reduce((s, i) => s + Number(i.price || 0), 0);
+            const totalText = fmt(total);
+
+            cartCountDesktopEl.textContent = `(${cart.length})`;
+            totalDesktopEl.textContent = totalText;
+            cartCountMobileEl.textContent = `(${cart.length})`;
+            totalMobileEl.textContent = totalText;
+        }
+
+
 
 
 
