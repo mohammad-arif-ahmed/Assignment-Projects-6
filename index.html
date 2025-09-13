@@ -388,14 +388,14 @@
         const closeModalBtn = document.getElementById('closeModalBtn');
 
         let categories = [];
-        let cart = [];
         const fmt = n => '৳' + Number(n).toFixed(2);
         const showSpinner = show => spinnerEl.classList.toggle('hidden', !show);
-        const safeGate = (obj, ...keys) => {
+        const safeGet = (obj, ...keys) => {
             for (const k of keys)
                 if (obj && Object.prototype.hasOwnProperty.call(obj, k)) return obj[k];
             return undefined;
         };
+
          function truncate(str, n) {
             return str && str.length > n ? str.slice(0, n) + '...' : (str || '');
         }
@@ -668,19 +668,46 @@
             cartCountMobileEl.textContent = `(${cart.length})`;
             totalMobileEl.textContent = totalText;
         }
+        
+        donateBtn?.addEventListener('click', () => {
+            const name = document.getElementById('donorName')?.value.trim();
+            const email = document.getElementById('donorEmail')?.value.trim();
+            const qty = Number(document.getElementById('donorQty')?.value) || 0;
+            if (!name || !email || qty === 0) {
+                alert('Please provide name, email and select number of trees');
+                return;
+            }
+            alert(`Thank you ${name}!\nYou selected ${qty} trees. We will contact you at ${email}.`);
+            document.getElementById('donorName').value = '';
+            document.getElementById('donorEmail').value = '';
+            document.getElementById('donorQty').value = 0;
+        });
 
+        mobileMenuBtn?.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
 
+        
+        closeModalBtn?.addEventListener('click', closeModal);
+        document.getElementById('modal')?.addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modal')) closeModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
 
+        
+        closeFixedCartBtn?.addEventListener('click', () => {
+            fixedCartEl.style.display = 'none';
+        });
 
+    
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCategories();
+        });
 
 
     </script>
-
-
-
-
-
-
 
 </body>
 
