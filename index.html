@@ -377,17 +377,23 @@
         const desktopCartEl = document.getElementById('desktop-cart');
         const cartListDesktopEl = document.getElementById('cart-list-desktop');
         const cartCountDesktopEl = document.getElementById('cart-count-desktop');
+        const totalDesktopEl = document.getElementById('total-desktop');
+
         const cartListMobileEl = document.getElementById('cart-list-mobile');
-        const cartCountMobileEl = document.getElementById('cart-count-mobile')
-        const totalMobileEl = document.getElementById('tatal-mobile');
-        const donaateBtn = document.getElementById('donaeBtn');
+        const cartCountMobileEl = document.getElementById('cart-count-mobile');
+        const totalMobileEl = document.getElementById('total-mobile');
+
+        const donateBtn = document.getElementById('donateBtn');
         const fixedCartEl = document.getElementById('fixed-cart');
-        const closeFixedCartBtn = document.getElementById('clseFixedCartBtn');
+        const closeFixedCartBtn = document.getElementById('closeFixedCartBtn');
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const mobileMenu = document.getElementById('mobileMenu');
         const closeModalBtn = document.getElementById('closeModalBtn');
 
-        let categories = [];
+
+         let categories = [];
+        let cart = [];
+
         const fmt = n => '৳' + Number(n).toFixed(2);
         const showSpinner = show => spinnerEl.classList.toggle('hidden', !show);
         const safeGet = (obj, ...keys) => {
