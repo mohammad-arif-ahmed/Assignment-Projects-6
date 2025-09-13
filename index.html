@@ -360,6 +360,42 @@
             © 2025 Green Earth. All Rights Reserved.
         </div>
     </footer>
+    <script>
+        
+        const API_BASE = 'https://openapi.programming-hero.com/api';
+        const ENDPOINTS = {
+            categories: API_BASE + '/categories',
+            plants: API_BASE + '/plants',
+            category: id => API_BASE + '/category/' + id,
+            plant: id => API_BASE + '/plant/' + id
+        };
+
+        const categoryListEl = document.getElementById('category-list');
+        const productsEl = document.getElementById('products');
+        const spinnerEl = document.getElementById('spinner');
+        const modalEl = document.getElementById('modal');
+        const modalContentEl = document.getElementById('modal-content');
+        const desktopCartEl = document.getElementById('desktop-cart');
+        const cartListDesktopEl = document.getElementById('cart-list-desktop');
+        const cartCountDesktopEl = document.getElementById('cart-count-desktop');
+        const cartListMobileEl = document.getElementById('cart-list-mobile');
+        const cartCountMobileEl = document.getElementById('cart-count-mobile')
+        const totalMobileEl = document.getElementById('tatal-mobile');
+        const donaateBtn = document.getElementById('donaeBtn');
+        const fixedCartEl = document.getElementById('fixed-cart');
+        const closeFixedCartBtn = document.getElementById('clseFixedCartBtn');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        
+        let categories = [] ;
+        let cart = [] ;
+        
+
+
+
+
+    </script>
 
 
 
